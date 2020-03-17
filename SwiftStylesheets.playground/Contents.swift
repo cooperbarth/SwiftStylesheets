@@ -6,20 +6,23 @@ import UIKit
 // Enum of the types of exposed selectors
 enum SelectorType {
 
-    case _id  // Unique selector
-    case _class  // Non-unique selector
+    case id
 
 }
 
 // Class representing a selector
-class Selector {
+class Selector: Equatable {
 
-    private let type: SelectorType
-    private let name: String
+    internal let type: SelectorType
+    internal let name: String
 
     init(type: SelectorType, name: String) {
         self.type = type
         self.name = name
+    }
+
+    static func == (lhs: Selector, rhs: Selector) -> Bool {
+        return lhs.type == rhs.type && lhs.name == rhs.name
     }
 
 }
@@ -29,21 +32,21 @@ class Selector {
 // Enum of property names
 enum PropertyName {
     case backgroundColor
-    case color
+    case display
     case height
     case margin
     case marginBottom
     case marginLeft
     case marginRight
     case marginTop
-    case padding
-    case paddingBottom
-    case paddingLeft
-    case paddingRight
-    case paddingTop
     case width
     case x
     case y
+}
+
+enum Display {
+    case hidden
+    case visible
 }
 
 // Define the Number type, which can be a Double, Float, or Int
@@ -58,6 +61,8 @@ class Property {
     var propertyName: PropertyName? = nil
     var propertyValue: Any? = nil
 
+    func applyTo(element: UIView) {}
+
 }
 
 class BackgroundColorProperty: Property {
@@ -68,14 +73,23 @@ class BackgroundColorProperty: Property {
         self.propertyValue = propertyValue
     }
 
+    override func applyTo(element: UIView) {
+        element.backgroundColor = self.propertyValue as? UIColor
+    }
+
 }
 
-class ColorProperty: Property {
+class DisplayProperty: Property {
 
-    init(propertyValue: UIColor) {
+    init(propertyValue: Display) {
         super.init()
-        self.propertyName = .color
+        self.propertyName = .display
         self.propertyValue = propertyValue
+    }
+
+    override func applyTo(element: UIView) {
+        if self.propertyValue == nil { return }
+        element.isHidden = self.propertyValue as! Display == .hidden
     }
 
 }
@@ -88,6 +102,17 @@ class HeightProperty: Property {
         self.propertyValue = propertyValue
     }
 
+    override func applyTo(element: UIView) {
+        element.addConstraint(
+            NSLayoutConstraint(item: element,
+                               attribute: .height,
+                               relatedBy: .equal,
+                               toItem: nil,
+                               attribute: .notAnAttribute,
+                               multiplier: 1,
+                               constant: self.propertyValue as! CGFloat))
+    }
+
 }
 
 class MarginProperty: Property {
@@ -96,6 +121,41 @@ class MarginProperty: Property {
         super.init()
         self.propertyName = .margin
         self.propertyValue = propertyValue
+    }
+
+    override func applyTo(element: UIView) {
+        element.addConstraint(
+            NSLayoutConstraint(item: element,
+                               attribute: .bottomMargin,
+                               relatedBy: .equal,
+                               toItem: nil,
+                               attribute: .notAnAttribute,
+                               multiplier: 1,
+                               constant: self.propertyValue as! CGFloat))
+        element.addConstraint(
+            NSLayoutConstraint(item: element,
+                               attribute: .leftMargin,
+                               relatedBy: .equal,
+                               toItem: nil,
+                               attribute: .notAnAttribute,
+                               multiplier: 1,
+                               constant: self.propertyValue as! CGFloat))
+        element.addConstraint(
+            NSLayoutConstraint(item: element,
+                               attribute: .rightMargin,
+                               relatedBy: .equal,
+                               toItem: nil,
+                               attribute: .notAnAttribute,
+                               multiplier: 1,
+                               constant: self.propertyValue as! CGFloat))
+        element.addConstraint(
+            NSLayoutConstraint(item: element,
+                               attribute: .topMargin,
+                               relatedBy: .equal,
+                               toItem: nil,
+                               attribute: .notAnAttribute,
+                               multiplier: 1,
+                               constant: self.propertyValue as! CGFloat))
     }
 
 }
@@ -108,6 +168,17 @@ class MarginBottomProperty: Property {
         self.propertyValue = propertyValue
     }
 
+    override func applyTo(element: UIView) {
+        element.addConstraint(
+            NSLayoutConstraint(item: element,
+                               attribute: .bottomMargin,
+                               relatedBy: .equal,
+                               toItem: nil,
+                               attribute: .notAnAttribute,
+                               multiplier: 1,
+                               constant: self.propertyValue as! CGFloat))
+    }
+
 }
 
 class MarginLeftProperty: Property {
@@ -116,6 +187,17 @@ class MarginLeftProperty: Property {
         super.init()
         self.propertyName = .marginLeft
         self.propertyValue = propertyValue
+    }
+
+    override func applyTo(element: UIView) {
+        element.addConstraint(
+            NSLayoutConstraint(item: element,
+                               attribute: .leftMargin,
+                               relatedBy: .equal,
+                               toItem: nil,
+                               attribute: .notAnAttribute,
+                               multiplier: 1,
+                               constant: self.propertyValue as! CGFloat))
     }
 
 }
@@ -128,6 +210,17 @@ class MarginRightProperty: Property {
         self.propertyValue = propertyValue
     }
 
+    override func applyTo(element: UIView) {
+        element.addConstraint(
+            NSLayoutConstraint(item: element,
+                               attribute: .rightMargin,
+                               relatedBy: .equal,
+                               toItem: nil,
+                               attribute: .notAnAttribute,
+                               multiplier: 1,
+                               constant: self.propertyValue as! CGFloat))
+    }
+
 }
 
 class MarginTopProperty: Property {
@@ -138,54 +231,15 @@ class MarginTopProperty: Property {
         self.propertyValue = propertyValue
     }
 
-}
-
-class PaddingProperty: Property {
-
-    init(propertyValue: Number) {
-        super.init()
-        self.propertyName = .padding
-        self.propertyValue = propertyValue
-    }
-
-}
-
-class PaddingBottomProperty: Property {
-
-    init(propertyValue: Number) {
-        super.init()
-        self.propertyName = .paddingBottom
-        self.propertyValue = propertyValue
-    }
-
-}
-
-class PaddingLeftProperty: Property {
-
-    init(propertyValue: Number) {
-        super.init()
-        self.propertyName = .paddingLeft
-        self.propertyValue = propertyValue
-    }
-
-}
-
-class PaddingRightProperty: Property {
-
-    init(propertyValue: Number) {
-        super.init()
-        self.propertyName = .paddingRight
-        self.propertyValue = propertyValue
-    }
-
-}
-
-class PaddingTopProperty: Property {
-
-    init(propertyValue: Number) {
-        super.init()
-        self.propertyName = .paddingTop
-        self.propertyValue = propertyValue
+    override func applyTo(element: UIView) {
+        element.addConstraint(
+            NSLayoutConstraint(item: element,
+                               attribute: .topMargin,
+                               relatedBy: .equal,
+                               toItem: nil,
+                               attribute: .notAnAttribute,
+                               multiplier: 1,
+                               constant: self.propertyValue as! CGFloat))
     }
 
 }
@@ -198,6 +252,17 @@ class WidthProperty: Property {
         self.propertyValue = propertyValue
     }
 
+    override func applyTo(element: UIView) {
+        element.addConstraint(
+            NSLayoutConstraint(item: element,
+                               attribute: .width,
+                               relatedBy: .equal,
+                               toItem: nil,
+                               attribute: .notAnAttribute,
+                               multiplier: 1,
+                               constant: self.propertyValue as! CGFloat))
+    }
+
 }
 
 class XPositionProperty: Property {
@@ -206,6 +271,17 @@ class XPositionProperty: Property {
         super.init()
         self.propertyName = .x
         self.propertyValue = propertyValue
+    }
+
+    override func applyTo(element: UIView) {
+        element.addConstraint(
+        NSLayoutConstraint(item: element,
+                           attribute: .centerX,
+                           relatedBy: .equal,
+                           toItem: nil,
+                           attribute: .notAnAttribute,
+                           multiplier: 1,
+                           constant: self.propertyValue as! CGFloat))
     }
 
 }
@@ -218,6 +294,17 @@ class YPositionProperty: Property {
         self.propertyValue = propertyValue
     }
 
+    override func applyTo(element: UIView) {
+        element.addConstraint(
+        NSLayoutConstraint(item: element,
+                           attribute: .centerY,
+                           relatedBy: .equal,
+                           toItem: nil,
+                           attribute: .notAnAttribute,
+                           multiplier: 1,
+                           constant: self.propertyValue as! CGFloat))
+    }
+
 }
 
 // MARK: Style
@@ -227,8 +314,8 @@ class YPositionProperty: Property {
 // SwiftStylesheets does not allow for duplicate property names and will use the last declared
 class Style {
 
-    private var selectors: [Selector]
-    private var properties: [Property]
+    internal var selectors: [Selector]
+    internal var properties: [Property]
 
     init() {
         self.selectors = []
@@ -249,17 +336,18 @@ class Style {
         self.properties.append(property)
     }
 
-    public func setProperty(propertyName: PropertyName, propertyValue: Any) {
-        
+    public func removeProperty(propertyName: PropertyName) {
+        self.properties = self.properties.filter {$0.propertyName != propertyName}
     }
 
 }
 
 // MARK: Stylesheet
 
+// Represents a Stylesheet, or a set of styles
 class Stylesheet {
 
-    private var styles: [Style]
+    internal var styles: [Style]
 
     init() {
         self.styles = []
@@ -270,3 +358,56 @@ class Stylesheet {
     }
 
 }
+
+// MARK: UIView Extension
+
+extension UIView {
+
+    // Struct to contain private stored properties
+    private struct storedProperties {
+        static var _selectors: [Selector] = []
+    }
+
+    var selectors: [Selector] {
+        get {
+            return storedProperties._selectors
+        }
+    }
+
+    // Adds the specified properties to a view
+    private func applyProperties(properties: [Property]) {
+        for property in properties {
+            property.applyTo(element: self)
+        }
+    }
+
+    // Checks whether a view matches all of a style's selector(s)
+    private func matchSelectors(selectors: [Selector]) -> Bool {
+        for selector in selectors {
+            if !self.selectors.contains(selector) {
+                return false
+            }
+        }
+        return true
+    }
+
+    // Traverses DOM and calls applyStyles on each node
+    func applyStylesheet(stylesheet: Stylesheet) {
+        // Apply properties for matching styles
+        for style in stylesheet.styles {
+            if (matchSelectors(selectors: style.selectors)) {
+                applyProperties(properties: style.properties)
+            }
+        }
+
+        // Recurse on subviews
+        for subview in self.subviews {
+            subview.applyStylesheet(stylesheet: stylesheet)
+        }
+    }
+
+}
+
+// MARK: Sample Code
+
+
