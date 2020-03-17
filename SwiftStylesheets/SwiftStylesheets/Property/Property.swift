@@ -1,64 +1,12 @@
-import Foundation
+//
+//  Property.swift
+//  SwiftStylesheets
+//
+//  Created by Cooper Barth on 3/17/20.
+//  Copyright © 2020 cooperbarth. All rights reserved.
+//
+
 import UIKit
-
-// MARK: Selector
-
-// Enum of the types of exposed selectors
-enum SelectorType {
-
-    case id
-
-}
-
-// Class representing a selector
-class Selector: Equatable {
-
-    internal let type: SelectorType
-    internal let name: String
-
-    init(name: String) {
-        self.type = .id
-        self.name = name
-    }
-
-    init(type: SelectorType, name: String) {
-        self.type = type
-        self.name = name
-    }
-
-    static func == (lhs: Selector, rhs: Selector) -> Bool {
-        return lhs.type == rhs.type && lhs.name == rhs.name
-    }
-
-}
-
-// MARK: Property
-
-// Enum of property names
-enum PropertyName {
-    case backgroundColor
-    case display
-    case height
-    case margin
-    case marginBottom
-    case marginLeft
-    case marginRight
-    case marginTop
-    case width
-    case x
-    case y
-}
-
-enum Display {
-    case hidden
-    case visible
-}
-
-// Define the Number type, which can be a Double, Float, or Int
-protocol Number {}
-extension Double: Number {}
-extension Float: Number {}
-extension Int: Number {}
 
 // Abstract class from which properties inherit
 class Property {
@@ -308,110 +256,6 @@ class YPositionProperty: Property {
                            attribute: .notAnAttribute,
                            multiplier: 1,
                            constant: self.propertyValue as! CGFloat))
-    }
-
-}
-
-// MARK: Style
-
-// Represents a single style declaration
-// A style usually has many properties and at least one selector
-// SwiftStylesheets does not allow for duplicate property names and will use the last declared
-class Style {
-
-    internal var selectors: [Selector]
-    internal var properties: [Property]
-
-    init() {
-        self.selectors = []
-        self.properties = []
-    }
-
-    init(selector: Selector, properties: [Property]) {
-        self.selectors = [selector]
-        self.properties = properties
-    }
-
-    init(selectors: [Selector], properties: [Property]) {
-        self.selectors = selectors
-        self.properties = properties
-    }
-
-    public func addProperty(property: Property) {
-        // Check for duplicate property names
-        // Check if the property already exists
-
-        self.properties.append(property)
-    }
-
-    public func removeProperty(propertyName: PropertyName) {
-        self.properties = self.properties.filter {$0.propertyName != propertyName}
-    }
-
-}
-
-// MARK: Stylesheet
-
-// Represents a Stylesheet, or a set of styles
-class Stylesheet {
-
-    internal var styles: [Style]
-
-    init() {
-        self.styles = []
-    }
-
-    init(styles: [Style]) {
-        self.styles = styles
-    }
-
-}
-
-// MARK: UIView Extension
-
-extension UIView {
-
-    // Struct to contain private stored properties
-    private struct storedProperties {
-        static var _selectors: [Selector] = []
-    }
-
-    var selectors: [Selector] {
-        get {
-            return storedProperties._selectors
-        }
-    }
-
-    // Adds the specified properties to a view
-    private func applyProperties(properties: [Property]) {
-        for property in properties {
-            property.applyTo(element: self)
-        }
-    }
-
-    // Checks whether a view matches all of a style's selector(s)
-    private func matchSelectors(selectors: [Selector]) -> Bool {
-        for selector in selectors {
-            if !self.selectors.contains(selector) {
-                return false
-            }
-        }
-        return true
-    }
-
-    // Traverses DOM and calls applyStyles on each node
-    func applyStylesheet(stylesheet: Stylesheet) {
-        // Apply properties for matching styles
-        for style in stylesheet.styles {
-            if (matchSelectors(selectors: style.selectors)) {
-                applyProperties(properties: style.properties)
-            }
-        }
-
-        // Recurse on subviews
-        for subview in self.subviews {
-            subview.applyStylesheet(stylesheet: stylesheet)
-        }
     }
 
 }
