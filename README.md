@@ -1,2 +1,2 @@
 # SwiftStylesheets
-CSS-like Stylesheets for UIKit
+CSS-like Stylesheets for iOS Apps
